@@ -1,7 +1,7 @@
 # ymcloud
 kubernetes management and publishing platform, this project is based on [zcloud](https://github.com/AsuraTeam/zcloud)
 
-![ymcloud demo](https://ws1.sinaimg.cn/large/006tNc79gy1g1v7luijrrj31j10u0n44.jpg)
+![ymcloud demo](https://ws2.sinaimg.cn/large/006tNc79gy1g1v8dozzedj31j10u07b9.jpg)
 
 
 ## Install
