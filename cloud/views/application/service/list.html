@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html>
+
+<!-- Tooltipster css -->
+{{template "template/head.html" .}}
+<!-- ION Slider -->
+<link href="/static/plugins/ion-rangeslider/ion.rangeSlider.css" rel="stylesheet" type="text/css"/>
+<link href="/static/plugins/ion-rangeslider/ion.rangeSlider.skinModern.css" rel="stylesheet" type="text/css"/>
+<link href="/static/plugins/bootstrap-tagsinput/css/bootstrap-tagsinput.css" rel="stylesheet"/>
+<!-- ============================================================== -->
+<!-- Start right Content here -->
+<!-- ============================================================== -->
+<div class="content-page">
+    <div class="container">
+        <!-- Start content -->
+        <div class="content">
+            <div id="add_scale_html"></div>
+            <div id="add_log_html"></div>
+            <div id="add_health_html"></div>
+            <div class="row ">
+                <div class="col-xs-12">
+                    <div class="page-title-box">
+                        <span class="dashabord-title">应用交付中心</span>
+                        <ol class="breadcrumb p-0 m-0">
+                            <li>
+                                <a href="#">容器治理</a>
+                            </li>
+                            <li>
+                                <a href="/application/service/list">服务管理</a>
+                            </li>
+                        </ol>
+                        <div class="clearfix"></div>
+                    </div>
+                </div>
+            </div>
+            <!-- end row -->
+            {%include application/service/service.html%}
+        </div>
+    </div>
+</div> <!-- end col -->
+{{template "template/bottom.html" .}}
+</body>
+</div>
+<input id="delete_service_force_id" type="hidden">
+<input id="delete_service_id" type="hidden">
+<script src="/static/zcloud/service.js"></script>
+<!-- Range slider js -->
+<script src="/static/plugins/ion-rangeslider/ion.rangeSlider.min.js"></script>
+
+<script>
+
+
+
+    var table;
+    function loadServiceData(key,name) {
+        if(!key){
+            key = $("#search-service-name-id").val();
+        }
+        if (!key) {
+            key = ""
+        } else {
+            if (key.length < 4) {
+                return
+            }
+        }
+        name = getValue(name);
+        // 应用详情页面使用 2018-01-18 08:02
+        var app = $("#detail_add_app_name").val();
+        if (!app) {
+            app = ""
+        }
+
+        table = $("#service-data-table").dataTable({
+            "filter": false,//去掉搜索框
+            "ordering": false, // 是否允许排序
+            "paginationType": "full_numbers", // 页码类型
+            "destroy": true,
+            "processing": true,
+            "bPaginate": true, //是否显示（应用）分页器
+            "serverSide": true,
+            "bLengthChange": true,
+            "bInfo": true, //是否显示页脚信息，DataTables插件左下角显示记录数
+            "scrollX": true, // 是否允许左右滑动
+            "displayLength": 50, // 默认长度
+            "ajax": { // 请求地址
+                "url": "/api/service?t=" + new Date().getTime() + "&key=" + key + "&AppName=" + app +"&ServiceName="+name,
+                "type": 'get'
+            },
+            "columns": [ // 数据映射
+                {
+                    "data": "ServiceId", "sWidth": "4%", "mRender": function (data) {
+                        var html = '<div class="checkbox checkbox-primary ">' +
+                                '<input id="checkbox0" onchange="checkBoxChange($(this))" type="checkbox" class="all" value="' + data + '">' +
+                                '<label for="checkbox0">' +
+                                '</label>' +
+                                '</div>';
+                        html = html.replace(/checkbox0/g, "checkbox" + data);
+                        return html;
+                    }
+                },
+                {
+                    "data": "ServiceName", "sWidth": "10%", "mRender": function (data, type, full) {
+                        return "<a href='javascript:void(0)' onclick='toContainer(" + full["ServiceId"] + ")'>" + data + "<br></a><span class='text-default'>应用:&nbsp;" + full["AppName"] + "</span><br><span class='text-default'>环境:&nbsp;" + full["Entname"] + "</span>";
+                    }
+                },
+                {
+                    "data": "Status", "sWidth": "8%", "mRender": function (data, type, full) {
+                        if (data == "True") {
+                            var r = '<div class="Running"><div><i class="fa fa-circle"></i><span>&nbsp;运行中</span>' +
+                                    "<div class='text-default'>" + full["AvailableReplicas"] + "/" + full["ContainerNumber"] + "&nbsp;共" + full["AvailableReplicas"] + "个运行</div>"
+                                    + '</div></div>'
+                        }
+                        if (full["AvailableReplicas"] == 0) {
+                            var r = '<div class="Fail"><div><i class="fa fa-circle"></i><span>&nbsp;已停止</span>&nbsp;' +
+                                    "<div class='text-default'>" + full["AvailableReplicas"] + "/" + full["ContainerNumber"] + "&nbsp;共" + full["AvailableReplicas"] + "个运行</div>"
+                                    + '</div>' +
+                                    '</div></div>'
+                        }
+                        if (!r) {
+                            return "<span class='Fail'>未知</span>"
+                        }
+                        var errmsg = full["ErrorMsg"];
+                        if (errmsg) {
+                            return "<span title='" + full["ErrorMsg"] + "'>" + r + "</span>"
+                        } else {
+                            return "<span>" + r + "</span>"
+                        }
+                    }
+                },
+                {
+                    "data": "Image", "sWidth": "11%", "mRender": function (data) {
+                        return "<div style='word-wrap:break-word'><a>" + data + "</a></div>";
+                    }
+                },
+                {
+                    "data": "ResourceName", "sWidth": "11%", "mRender": function (data, type, full) {
+                        return "<a href='/base/quota/detail/" + data + "'>" + data + "</a><br>集群名称:&nbsp;" + full["ClusterName"]
+                    }
+                },
+                {"data": "CreateTime", "sWidth": "7%"},
+                {
+                    "data": "Access", "sWidth": "16%", "mRender": function (data,type,full) {
+                        if (data) {
+                            data = data.join("<br>")
+                        }
+                        if(full["Domain"]){
+                            data += "<br>域名访问: <a target='_blank' href='http://" + full["Domain"] +"'/>"+full["Domain"]+"</a><br>"
+                        }
+                        if(data){
+                            return data;
+                        }
+                        return "<span class='Fail'>未知</span>"
+
+                    }
+                },
+                {
+                    "data": "ServiceId", "sWidth": "6%", "mRender": function (data,type,full) {
+                        return '<button type="button"  title="强制删除" onClick="deleteServiceSwal(' + data + ',1)" class="delete-groups btn btn-xs rb-btn-oper">&nbsp;<i class="fa fa-bolt">&nbsp;</i></button>' +
+                                '<button type="button"  title="显示日志" onClick="toLog(\'' + full["Entname"]+ '\',\''+full["ServiceName"]+'\',\''+full["ClusterName"]+'\')" class="delete-groups btn btn-xs rb-btn-oper m-l-5"><i class="fa fa-history"></i></button>' ;
+                    }
+                },
+            ],
+            "fnRowCallback": function (row, data) { // 每行创建完毕的回调
+                $(row).data('recordId', data.recordId);
+            }
+        });
+        // $("#app-data-table_wrapper").css("cssText", "margin-top:-20px !important;");
+
+    }
+
+    loadServiceData('',"{{.ServiceName}}");
+
+    var timer ;
+    var count;
+    timer = setInterval(function () {
+        table.fnReloadAjax();
+        count += 1;
+        if(count > 300){
+            clearInterval(timer);
+        }
+    }, 300000);
+
+</script>
+</html>

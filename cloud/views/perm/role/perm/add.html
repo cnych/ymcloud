@@ -1,0 +1,208 @@
+<!-- Treeview css -->
+<link href="/static/plugins/jstree/style.css" rel="stylesheet" type="text/css"/>
+<style>
+    ::-webkit-scrollbar {
+        width: 0.2em;
+    }
+
+    ::-webkit-scrollbar:horizontal {
+        height: 0.2em;
+    }
+</style>
+<div id="add_post_html" class="modal fade " tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
+     aria-hidden="true"
+     style="display: none;">
+    <div class="modal-dialog " style="width: 60%;">
+        <div class="modal-content p-0 b-0 ">
+            <div class="panel panel-color panel-default">
+                <div class="panel-heading">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                    <span class="modal-title">修改添加角色权限</span>
+                </div>
+                <form class="cluster-form">
+                    <div class="panel-body font-12 ">
+                        <div class="col-md-12">
+                            <div class="card-box">
+                                <div id="checkTree" style="height: 800px;overflow: scroll;">
+
+                                {{/*<ul>*/}}
+                                        {{/*<li>权限*/}}
+                                            {{/*<ul>*/}}
+                                                {{/*<li data-jstree='{"opened":true}'>Assets*/}}
+                                                    {{/*<ul>*/}}
+                                                        {{/*<li data-jstree='{"type":"file"}'>Css</li>*/}}
+                                                        {{/*<li data-jstree='{"opened":false}'>Plugins*/}}
+                                                            {{/*<ul>*/}}
+                                                                {{/*<li data-jstree='{"type":"file","selected":true}'>Plugin*/}}
+                                                                    {{/*one*/}}
+                                                                {{/*</li>*/}}
+                                                                {{/*<li data-jstree='{"type":"file"}'>Plugin two</li>*/}}
+                                                            {{/*</ul>*/}}
+                                                        {{/*</li>*/}}
+                                                    {{/*</ul>*/}}
+                                                {{/*</li>*/}}
+                                                {{/*<li data-jstree='{"opened":true}'>Email Template*/}}
+                                                    {{/*<ul>*/}}
+                                                        {{/*<li data-jstree='{"type":"file"}'>Email one</li>*/}}
+                                                        {{/*<li data-jstree='{"type":"file"}'>Email two</li>*/}}
+                                                    {{/*</ul>*/}}
+                                                {{/*</li>*/}}
+                                                {{/*<li data-jstree='{"icon":"mdi mdi-view-dashboard"}'>Dashboard</li>*/}}
+                                                {{/*<li data-jstree='{"icon":"mdi mdi-format-float-right"}'>Typography</li>*/}}
+                                                {{/*<li data-jstree='{"opened":true}'>User Interface*/}}
+                                                    {{/*<ul>*/}}
+                                                        {{/*<li data-jstree='{"opened":true}'>Buttons*/}}
+                                                            {{/*<ul>*/}}
+                                                                {{/*<li data-jstree='{"type":"file"}'>Buttons111*/}}
+                                                                {{/*</li>*/}}
+                                                                {{/*<li data-jstree='{"type":"file"}'>Card1111s</li>*/}}
+                                                            {{/*</ul>*/}}
+                                                        {{/*</li>*/}}
+                                                        {{/*<li data-jstree='{"type":"file"}'>Cards</li>*/}}
+                                                    {{/*</ul>*/}}
+                                                {{/*</li>*/}}
+                                                {{/*<li data-jstree='{"icon":"mdi mdi-foursquare"}'>Forms</li>*/}}
+                                                {{/*<li data-jstree='{"icon":"mdi mdi-format-list-bulleted"}'>Tables</li>*/}}
+                                            {{/*</ul>*/}}
+                                        {{/*</li>*/}}
+                                        {{/*<li data-jstree='{"type":"file"}'>Frontend</li>*/}}
+                                    {{/*</ul>*/}}
+                                </div>
+                            </div>
+                        </div><!-- end col -->
+                    </div>
+                    <!-- end row -->
+            </div>
+            <div class="panel-footer">
+                <button type="button" class="btn btn-default waves-effect" data-dismiss="modal"><i
+                        class="fa fa-times"></i>&nbsp;&nbsp;取消
+                </button>
+                <button type="button" onclick="saveRolePerm('{{.data.RoleId}}')"
+                        class="btn btn-info waves-effect waves-light"><i class="fa fa-save"></i>&nbsp;&nbsp; 保存
+                </button>
+            </div>
+            </form>
+        </div>
+    </div>
+</div>
+</div>
+<!-- Tree view js -->
+<script src="/static/plugins/jstree/jstree.min.js"></script>
+<script src="/static/pages/jquery.tree.js"></script>
+<script>
+
+    function joinName(p) {
+        return p[0];
+    }
+
+    /**
+     * 2018-09-11 07:57
+     * 保存角色权限
+     * */
+    function saveRolePerm(id) {
+        var r = $('#checkTree').jstree().get_checked(true);
+        var data = [];
+        $.each(r, function (k, v) {
+            data.push(v["text"]);
+        });
+        data = data.join(",");
+        var url = "/api/perm/role/perm/";
+        var result = post({RoleId: id, PermName:data}, url);
+        result = JSON.stringify(result);
+        if (result.indexOf("保存成功") != -1) {
+            $("#add_post_html").modal("toggle");
+            success(result);
+        } else {
+            faild(result);
+        }
+    }
+
+    /**2018-09-10 09:09
+     * 加载权限树资源
+     */
+    function loadTree() {
+        var perm = JSON.parse('{{.data.Permissions}}');
+        var url = "/api/perm/resource/tree";
+        var result = get({}, url);
+        var html = '   <ul>' +
+                '    <li data-jstree=\'{"opened":true}\'>权限' +
+                '     <ul>';
+        $.each(result, function (index, item) {
+            var indexs = index.split("/");
+            html += "<li data-jstree='{\"opened\":true}' tree-data='" + joinName(indexs) + "'>" + indexs[0];
+            html += "<ul>";
+            $.each(item, function (index, itemobj) {
+                var indexs1 = index.split("/");
+                html += "<li tree-data='" + joinName(indexs1) + "' data-jstree='{\"opened\":false}'>" + indexs1[0];
+                if (JSON.stringify(itemobj).length > 2) {
+                    html += "<ul>";
+                    $.each(itemobj, function (index1, itemobj1) {
+                        var indexs2 = index1.split("/");
+                        if (JSON.stringify(itemobj).length > 2) {
+
+                            html += "<li tree-data='" + joinName(indexs2) + "' data-jstree='{\"opened\":true}'>" + indexs2[0];
+                            html += "<ul>";
+                            $.each(itemobj1, function (index2, itemobj2) {
+                                var indexs3 = index2.split("/");
+                                if (JSON.stringify(itemobj2).length > 2) {
+                                    html += "<li tree-data='" + joinName(indexs3) + "' data-jstree='{\"opened\":true}'>" + indexs3[0];
+                                    html += "<ul>";
+                                    $.each(itemobj2, function (index3, itemobj3) {
+                                        var indexs4 = index3.split("/");
+                                        if(perm[indexs4[0]]){
+                                            html += "<li tree-data='" + joinName(indexs4) + "' data-jstree='{\"type\":\"file\", \"selected\":true}'>" + indexs4[0] + "</li>";
+                                        }else{
+                                            html += "<li  data-jstree='{\"type\":\"file\"}'>" + indexs4[0] + "</li>";
+                                        }
+                                    });
+                                    html += "</ul>";
+                                    html += "</li>"
+                                } else {
+
+                                    if(perm[indexs3[0]]) {
+                                        html += "<li data-jstree='{\"type\":\"file\",\"selected\":true}'>" + indexs3[0] + "</li>";
+                                    }else{
+                                        html += "<li data-jstree='{\"type\":\"file\"}'>" + indexs3[0] + "</li>";
+                                    }
+                                }
+
+                            });
+                            html += "</ul>";
+                            html += "</li>"
+                        } else {
+                            html += "<li data-jstree='{\"type\":\"file\"}'>" + indexs2[0] + "</li>";
+                        }
+                    });
+                    html += "</ul>";
+                }
+                html += "</li>"
+            });
+            html += "</ul>";
+            html += "</li>"
+        });
+        html += '</ul>' +
+                '  </li>' +
+                '     </ul>';
+        console.log(html);
+        $("#checkTree").html(html);
+        // Checkbox
+        $('#checkTree').jstree({
+            'core': {
+                'themes': {
+                    'responsive': false
+                }
+            },
+            'types': {
+                'default': {
+                    'icon': 'fa fa-folder'
+                },
+                'file': {
+                    'icon': 'fa fa-file'
+                }
+            },
+            'plugins': ['types', 'checkbox']
+        });
+    }
+
+    loadTree();
+</script>

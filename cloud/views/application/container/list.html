@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html>
+
+<!-- Tooltipster css -->
+{{template "template/head.html" .}}
+<!-- ============================================================== -->
+<!-- Start right Content here -->
+<!-- ============================================================== -->
+<style>
+    .th {
+        border-bottom: 1px solid #ccc;
+    }
+
+    ::-webkit-scrollbar {
+        width: 0.11em;
+    }
+
+    ::-webkit-scrollbar:horizontal {
+        height: 0.11em;
+    }
+</style>
+<div id="show_events" class="modal fade " tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
+     aria-hidden="true"
+     style="display: none;">
+    <div class="modal-dialog " style="width: 50%">
+        <div class="modal-content p-0 b-0 ">
+            <div class="panel panel-color panel-default">
+                <div class="panel-heading">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">×</button>
+                    <span class="modal-title"><span id="container-name-id"
+                                                    class="m-r-10 text-primary"></span>容器事件信息详情</span>
+                </div>
+                <div class="panel-body font-12 " id="">
+                    <ul class="sortable-list taskList list-unstyled" id="show_events_html">
+
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="content-page">
+    <div class="container">
+        <!-- Start content -->
+        <div class="content">
+            <div id="add_scale_html"></div>
+            <div id="add_health_html"></div>
+            <div class="row ">
+                <div class="col-xs-12">
+                    <div class="page-title-box">
+                        <span class="dashabord-title">应用交付中心</span>
+                        <ol class="breadcrumb p-0 m-0">
+                            <li>
+                                <a href="#">容器治理</a>
+                            </li>
+                            <li>
+                                <a href="/application/container/list">容器管理</a>
+                            </li>
+                        </ol>
+                        <div class="clearfix"></div>
+                    </div>
+                </div>
+            </div>
+            <!-- end row -->
+            <div class="row ">
+                <div class="col-sm-12 top-10" style="margin-left: -18px;">
+                    <div class="col-sm-2">
+                        <button type="button" disabled onclick="deleteContainerSwal()"
+                                class="btn btn-default btn-sm button-select radius3 waves-effect waves-light"><i
+                                class="fa fa-trash-o"></i><span>&nbsp;强制删除</span></button>
+                    </div>
+
+                    <div class="col-sm-1 cluster-search pull-right">
+                        <button type="button" class="btn btn-default waves-effect waves-light"
+                                onclick="loadContainerData()"
+                                style="border-radius: 5px;">
+                            <i class="fa fa fa-refresh"></i>
+                        </button>
+                    </div>
+                    <div class="col-md-2 pull-right" style="margin-top:0px;">
+                        <input type="text" onkeyup="loadContainerData($(this).val())" class="form-control"
+                               id="search-c-name-id"
+                               placeholder="搜索名称">
+                        <i class="fa fa-search form-control-feedback l-h-34 right15"></i>
+                    </div>
+
+                    <div class="col-sm-3 pull-right right15" style="margin-right: -40px;">
+                        <div class="form-group">
+                            <label class="col-md-3 fw100 control-label" style="margin-top: 8px;">服务</label>
+                            <div class="col-md-8">
+                                <select class="selectpicker"
+                                        onchange="loadContainerData('', $('#select-app-select').val(), $(this).val());"
+                                        data-live-search="true" data-style="btn-default"
+                                        id="select-service-id">
+                                    <option>请选择</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-sm-3 pull-right right15" style="margin-right: -40px;">
+                        <div class="form-group">
+                            <label class="col-md-3 fw100 control-label" style="margin-top: 8px;">应用</label>
+                            <div class="col-md-8">
+                                <select class="selectpicker" onchange="setServiceName(1);" data-live-search="true"
+                                        data-style="btn-default" id="select-app-select">
+
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-sm-3 pull-right right15" style="margin-top:-33px;margin-right: -30px;">
+                        <div class="form-group">
+                            <label class="col-md-3 fw100 control-label" style="margin-top: 8px;">环境</label>
+                            <div class="col-md-8">
+                                <select class="selectpicker" onchange="loadAppName($(this).val());"
+                                        data-live-search="true" data-style="btn-default" id="select-ent-select">
+
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+                <br>
+                <br>
+                <br>
+                <div class="col-sm-12 app-table" style="margin-top: -15px;">
+                    <br>
+                    <table id="app-data-table" class="table table-hover ">
+                        <thead>
+                        <tr>
+                            <th class="th">
+                                <div class="checkbox checkbox-primary "
+                                     style="margin-left: 10px;    margin-bottom: -5px;">
+                                    <input id="checkbox0" type="checkbox" class="all-select">
+                                    <label for="checkbox0">
+                                    </label>
+                                </div>
+                            </th>
+                            <th class="th">容器名称</th>
+                            <th class="th">运行状态</th>
+                            <th class="th">镜像</th>
+                            <th class="th">资源</th>
+                            <th class="th">IP地址</th>
+                            <th class="th">创建时间/重启</th>
+                            <th class="th">终端/事件/镜像/日志</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        </tbody>
+                    </table>
+                    <br>
+                </div>
+            </div>
+        </div>
+    </div>
+</div> <!-- end col -->
+<textarea style="display: none" id="event-template">
+           <li class="task-COLOR" id="task14">
+                                <div class="clearfix"></div>
+                                <div class="m-t-20">
+                                    <p class="m-b-0"><a href="" class="text-muted"> <span
+                                            class="font-bold font-secondary">事件类型: TYPE</span></a> </p>
+                                    <p class="m-b-0"><a href="" class="text-muted"> <span
+                                            class="font-bold font-secondary">事件原因: REASON</span></a> </p>
+                                    <p class="m-b-0"><a href="" class="text-muted"> <span
+                                            class="font-bold font-secondary">事件事件: TIME</span></a> </p>
+                                    <p class="m-b-0"><a href="" class="text-muted"> <span
+                                            class="font-bold font-secondary">响应信息:<b> MESSAGES</b></span></a> </p>
+                                    <p class="m-b-0"><a href="" class="text-muted"> <span
+                                            class="font-bold font-secondary">所在节点: HOST</span></a> </p>
+                                </div>
+                            </li>
+</textarea>
+{{template "template/bottom.html" .}}
+</body>
+</div>
+<input id="delete_service_force_id" type="hidden">
+<input id="delete_service_id" type="hidden">
+<script src="/static/zcloud/service.js"></script>
+<!-- Range slider js -->
+
+<script>
+    $('.selectpicker').selectpicker({//初始化
+        size: 3
+    });
+    var table;
+    var serviceId = "{{.serviceId}}";
+    if (serviceId) {
+        $("#select-ent-select").html("{{.Entname}}");
+        $("#select-app-select").html("{{.AppData}}");
+        setTimeout(function () {
+            $("#select-service-id").html("{{.ServiceName}}");
+            $(".selectpicker").selectpicker('refresh');
+            loadContainerData("", "", "", "");
+        }, 100);
+    } else {
+        loadContainerData("", "", "", 1);
+    }
+
+    function loadContainerData(key, app, service, init) {
+
+        if (!key) {
+            key = $("#search-c-name-id").val();
+        }
+        key = getValue(key);
+        if (key != "" && key.length < 4) {
+            return
+        }
+        if (init) {
+            app = getValue(app);
+            service = getValue(service)
+        } else {
+            app = getValue($("#select-app-select").val());
+            service = getValue($("#select-service-id").val());
+        }
+        var entname = getValue($("#select-ent-select").val());
+        entname = getValue(entname);
+        if (service == "--请选择--") {
+            service = "";
+        }
+        if (app == "--请选择--") {
+            app = "";
+        }
+        if (entname == "--请选择--") {
+            entname = "";
+        }
+
+
+        table = $("#app-data-table").dataTable({
+            "filter": false,//去掉搜索框
+            "ordering": false, // 是否允许排序
+            "paginationType": "full_numbers", // 页码类型
+            "destroy": true,
+            "processing": false,
+            "serverSide": true,
+            "scrollX": true, // 是否允许左右滑动
+            "displayLength": 10, // 默认长度
+            "bLengthChange": true,
+            "ajax": { // 请求地址
+                "url": "/api/container?t=" + new Date().getTime() + "&cluster=" + getClusterName() + "&search=" + key + "&AppName=" + app + "&Service=" + service + "&Entname=" + entname,
+                "type": 'get'
+            },
+            "columns": [ // 数据映射
+                {
+                    "data": "ContainerId", "sWidth": "4%", "mRender": function (data) {
+                        var html = '<div class="checkbox checkbox-primary ">' +
+                                '<input id="checkbox0" onchange="checkBoxChange($(this))" type="checkbox" class="all" value="' + data + '">' +
+                                '<label for="checkbox0">' +
+                                '</label>' +
+                                '</div>';
+                        html = html.replace(/checkbox0/g, "checkbox" + data);
+                        return html;
+                    }
+                },
+                {
+                    "data": "ContainerName", "sWidth": "16%", "mRender": function (data, type, full) {
+                        return "<a href='javascript:void(0)' onclick='toContainerDetail(\"" + data + "\")'>" + data + "</a><br><span class='text-default brtop5'>" + full["Entname"] + "</span>";
+                    }
+                },
+                {
+                    "data": "Status", "sWidth": "10%", "mRender": function (data, type, full) {
+                        r = data;
+                        if (data == "Running") {
+                            var r = '<div class="Running"><div><i class="fa fa-circle"></i><span>&nbsp;运行中</span>' +
+                                    "<div class='text-default brtop5'>" + 1 + "/" + 1 + "&nbsp;共" + 1 + "个运行</div>"
+                                    + '</div></div>'
+                            return r;
+                        }
+                        if (data == "False") {
+                            var r = '<div class="text-warning"><div><i class="fa fa-circle"></i><span>&nbsp; 未知</span>&nbsp;' +
+                                    "<div class='text-default brtop5'>0/0&nbsp;共0个运行</div>"
+                                    + '</div>' +
+                                    '</div></div>'
+                        }
+                        if (data == "Pending") {
+                            var r = '<div class="text-warning"><div><i class="fa fa-circle"></i><span>&nbsp;等待中</span>&nbsp;' +
+                                    "<div class='text-default brtop5'>0/0&nbsp;共0个运行</div>"
+                                    + '</div>' +
+                                    '</div></div>'
+                        }
+                        if (data == "Failed") {
+                            var r = '<div class="Fail"><div><i class="fa fa-circle"></i><span>&nbsp;失败</span>&nbsp;' +
+                                    "<div class='text-default brtop5'>0/0&nbsp;共0个运行</div>"
+                                    + '</div>' +
+                                    '</div></div>'
+                        }
+                        if (data == "NodeLost") {
+                            var r = '<div class="Fail"><div><i class="fa fa-circle"></i><span>&nbsp;主机节点丢失</span>&nbsp;' +
+                                    "<div class='text-default brtop5'>0/0&nbsp;共0个运行</div>"
+                                    + '</div>' +
+                                    '</div></div>'
+                        }
+                        if (r == "Delete") {
+                            r = "<span class='text-danger'><i class='fa fa-circle m-r-5'></i>删除中...</span>"
+                        }
+                        if (full["CreateTime"].indexOf("秒前") != -1) {
+                            return '<div class="Running" style="color: #3cbbb5ad !important;"><div><i class="fa fa-circle"></i><span>&nbsp;启动中</span>' +
+                                    '</div></div>';
+                        }
+                        var errmsg = full["ErrorMsg"];
+                        if (full["TerminatedMessages"] && full["TerminatedReason"] != "0" && full["TerminatedMessages"] != "") {
+                            errmsg = full["TerminatedReason"] + "\n" + full["TerminatedMessages"];
+                        }
+                        if (full["WaitingMessages"] && full["WaitingReason"] != "0" && full["WaitingMessages"] != "") {
+                            errmsg = full["WaitingReason"] + "\n" + full["WaitingMessages"];
+                        }
+                        if (errmsg) {
+                            return "<span title='" + errmsg + "' class='text-danger'>" + r + "</span>"
+                        } else {
+                            return "<span>" + r + "</span>"
+                        }
+                    }
+                },
+                {
+                    "data": "Image", "sWidth": "11%", "mRender": function (data) {
+                        return "<div style='word-wrap:break-word'><a>" + data + "</a></div>";
+                    }
+                },
+                {
+                    "data": "AppName", "sWidth": "9%", "mRender": function (data, type, full) {
+                        return "<span class='text-default'>应用:&nbsp;" + data + "<br><span class='text-default brtop5'>集群:&nbsp;" + full["ClusterName"] + "</span>";
+                    }
+                },
+                {
+                    "data": "ContainerIp", "sWidth": "7%", "mRender": function (data, type, full) {
+                        return "<span class='text-default'>" + data + "</span><br><span class='brtop5'>" + full["ServerAddress"] + "</span>"
+                    }
+                },
+                {
+                    "data": "ContainerIp", "sWidth": "12%", "mRender": function (data, type, full) {
+                        return full["CreateTime"] + "<br>" + full["Restart"] + "次"
+                    }
+                },
+                {
+                    "sWidth": "11%", "data": "ContainerId", "mRender": function (data, type, full) {
+                        var event = encodeURI(full["Events"]);
+                        var html = "";
+                        if (full["Status"] == "Running") {
+                            html = '<button type="button" title="连接到容器终端" onclick="toTty(' + data + ')" style="padding: 5px !important;" class="btn btn-xs rb-btn-oper"><i class="fa fa-terminal"></i></button>&nbsp;';
+                        }
+                        return html + '<button type="button" title="显示容器事件信息" onclick="displayEvent(\'' + event + '\',\'' + full["ContainerName"] + '\')" style="padding: 5px !important;" class="btn btn-xs rb-btn-oper"><i class="fa fa-envelope"></i></button>&nbsp;' +
+                                '<button type="button" title="将容器保存为镜像" onclick="commitImages(' + data + ')" style="padding: 5px !important;" class="btn btn-xs rb-btn-oper"><i class="fa fa-compress"></i></button>&nbsp;' +
+                                '<button type="button" title="显示容器日志" onclick="displayLog(\'' + full["ContainerName"] + '\')" style="padding: 5px !important;" class="btn btn-xs rb-btn-oper"><i class="fa fa-history"></i></button>&nbsp;'
+                                ;
+                    }
+                },
+            ],
+            "fnRowCallback": function (row, data) { // 每行创建完毕的回调
+                $(row).data('recordId', data.recordId);
+            }
+        });
+        $("#app-data-table_wrapper").css("cssText", "margin-top:10px !important;");
+
+    }
+
+
+    function setServiceName(change) {
+        var entname = getValue($("#select-ent-select").val());
+        var app = $("#select-app-select").val();
+        var url = "/api/service/name";
+        var result = get({AppName: app, Entname: entname}, url);
+        var html = "<option>--请选择--</option>";
+        for (var i = 0; i < result.length; i++) {
+            html += "<option value='" + result[i]["ServiceName"] + "'>" + result[i]["ServiceName"] + "</option>";
+        }
+        $("#select-service-id").html(html);
+        $("#select-service-id").selectpicker('refresh');
+        if (change) {
+            loadContainerData("", app, $("#select-service-id").val());
+        }
+    }
+
+    setServiceName();
+
+    /**
+     * 2018-08-21 13:29
+     * 提交镜像页面
+     * */
+    function commitImages(id) {
+        if (!id) {
+            return;
+        }
+        var url = "/application/container/image";
+        var result = get({id: id}, url);
+        $("#add_scale_html").html(result);
+        $("#add_post_html").modal("toggle")
+    }
+
+    /**
+     * 2018-09-05 108:04
+     * 显示容器日志
+     * */
+    function displayLog(name) {
+        window.open("/api/container/logs/" + name, "_blank");
+    }
+
+    /**
+     * 2018-08-22 13:50
+     * 提交镜像操作
+     * */
+    function commitImage(id) {
+        if (!id) {
+            return;
+        }
+        var url = "/api/container/commit/" + id;
+        var result = post(get_form_data(), url);
+        return JSON.stringify(result);
+    }
+
+    /**
+     * 2018-08-21 13:29
+     * 提交镜像
+     * */
+    function commitImagesSwal(id) {
+        Swal("同意后该容器即可以保存为一个新的镜像", "warning", "确认操作", "不操作", "成功", "失败", "commitImage(" + id + ")", "loadContainerData()");
+    }
+
+    /**
+     * 2018-08-17 13:52
+     * 显示容器事件
+     * */
+    function displayEvent(obj, name) {
+        $("#container-name-id").html(name);
+        var data = decodeURI(obj);
+        if (data) {
+            data = JSON.parse(data);
+            if (data.length == 0) {
+                faild("该容器没有事件");
+                return;
+            }
+            var template = $("#event-template").val();
+            var html = "";
+            for (var i = 0; i < data.length; i++) {
+                var temp = template.replace(/TIME/, data[i]["EventTime"]);
+                temp = temp.replace(/MESSAGES/, data[i]["Messages"]);
+                temp = temp.replace(/HOST/, data[i]["Host"]);
+                temp = temp.replace(/REASON/, data[i]["Reason"]);
+                temp = temp.replace(/TYPE/, data[i]["Type"]);
+                var obj = {};
+                obj = data[i];
+                if (obj.hasOwnProperty("Type")) {
+                    switch (data[i]["Type"]) {
+                        case "Normal":
+                            temp = temp.replace(/COLOR/, "success");
+                            break;
+                        case "Warning":
+                            temp = temp.replace(/COLOR/, "warning");
+                            break;
+                        default:
+                            temp = temp.replace(/COLOR/, "danger");
+                            break
+                    }
+                }
+                temp = temp.replace(/COLOR/, "success");
+                html += temp;
+            }
+            $("#show_events_html").html(html);
+            $("#show_events").modal("toggle");
+        } else {
+            faild("该容器没有事件");
+        }
+    }
+
+    /**
+     * 获取app名称
+     * 2018-01-22 14:54
+     */
+    function setAppData() {
+        var app = "{{.AppData}}";
+        app = app.replace(/"/g, "");
+        $("#select-app-select").html(app);
+        $("#select-ent-select").html("{{.Entname}}");
+        $(".selectpicker").selectpicker('refresh');
+    }
+
+    setAppData();
+
+    /**
+     * 2018-02-07 17:18
+     * 通过环境名称加载应用名称
+     */
+    function loadAppName(entname) {
+        var url = "/api/app/name";
+        var result = get({Entname: entname}, url);
+        var html = "<option>--请选择--</option>"
+        for (var i = 0; i < result.length; i++) {
+            html += "<option value='" + result[i]["AppName"] + "'>" + result[i]["AppName"] + "</option>"
+        }
+        $("#select-app-select").html(html);
+        $(".selectpicker").selectpicker('refresh');
+    }
+
+    var timer;
+    var count;
+    timer = setInterval(function () {
+        table.fnReloadAjax();
+        count += 1;
+        if (count > 300) {
+            clearInterval(timer);
+        }
+    }, 30000);
+
+
+</script>
+</html>
