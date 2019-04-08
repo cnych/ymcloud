@@ -30,7 +30,7 @@ function deleteDockerFileSwal(id,detail) {
  * 将页面刷新到列表页面
  */
 function loadDockerfileList() {
-    window.location.href = "/ci/dockerfile/list";
+    window.location.href = "/src/Dockerfile/list";
 }
 
 /**

@@ -1,0 +1,60 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: ymcloud
+  namespace: ymcloud
+spec:
+  template:
+    metadata:
+      labels:
+        app: ymcloud
+    spec:
+      containers:
+        - name: ymcloud
+          image: cnych/ymcloud:1.4
+          imagePullPolicy: IfNotPresent
+          ports:
+            - name: webport
+              containerPort: 9090
+          resources:
+            limits:
+              cpu: 200m
+              memory: 200Mi
+            requests:
+              cpu: 100m
+              memory: 100Mi
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: ymcloud
+  namespace: ymcloud
+  labels:
+    app: ymcloud
+spec:
+  ports:
+    - name: webport
+      port: 9090
+      targetPort: webport
+  selector:
+    app: ymcloud
+
+---
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: ymcloud
+  namespace: ymcloud
+  annotations:
+    kubernetes.io/ingress.class: "traefik"
+spec:
+  rules:
+  - host: ymcloud.cloud.local
+    http:
+      paths:
+      - path: /
+        backend:
+          serviceName: ymcloud
+          servicePort: webport
+

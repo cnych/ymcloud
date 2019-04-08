@@ -1,0 +1,81 @@
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: mysql-pv
+spec:
+  capacity:
+    storage: 2Gi
+  accessModes:
+  - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Recycle
+  nfs:
+    server: 10.151.30.11
+    path: /data/k8s
+
+---
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: mysql-pv-claim
+  namespace: ymcloud
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 2Gi
+
+---
+apiVersion: apps/v1beta1
+kind: Deployment
+metadata:
+  name: mysql
+  namespace: ymcloud
+  labels:
+    app: mysql
+spec:
+  template:
+    metadata:
+      labels:
+        app: mysql
+    spec:
+      containers:
+      - name: mysql
+        image: mysql:5.7
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 3306
+          name: dbport
+        env:
+        - name: MYSQL_ROOT_PASSWORD
+          value: rootPassW0rd
+        - name: MYSQL_DATABASE
+          value: cloud
+        - name: MYSQL_USER
+          value: ymcloud
+        - name: MYSQL_PASSWORD
+          value: ymcloud321
+        volumeMounts:
+        - name: mysql-persistent-storage
+          subPath: mysql
+          mountPath: /var/lib/mysql
+      volumes:
+      - name: mysql-persistent-storage
+        persistentVolumeClaim:
+          claimName: mysql-pv-claim
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: mysql
+  namespace: ymcloud
+spec:
+  selector:
+    app: mysql
+  ports:
+  - name: mysqlport
+    protocol: TCP
+    port: 3306
+    targetPort: dbport
